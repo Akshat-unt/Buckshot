@@ -126,14 +126,8 @@ class Player():
         angle = (180 / math.pi) * -math.atan2(rel_y, rel_x)
         self.gun.set_rotation(angle)
 
-        if(self.offset.x > 0):
-            self.offset.x = rel_x if rel_x < 4 else 4
-        else:
-            self.offset.x = rel_x if rel_x > -4 else -4
-        if(self.offset.y > 0):
-            self.offset.y = rel_y if rel_y < 4 else 4
-        else:
-            self.offset.y = rel_y if rel_y > -4 else -4
+        self.offset.x = min(rel_x, 4) if (self.offset.x > 0) else max(rel_x, -4)
+        self.offset.y = min(rel_y, 4) if (self.offset.y > 0) else max(rel_y, -4)
 
     def wall_detection(self):
         if(self.position.x < 0):
@@ -157,13 +151,12 @@ class Player():
 
     def check_state(self):
         global is_menu
-        if(self.is_dead):
+        if self.is_dead:
             old_highscore_value = open("data/serialisation/highscore.csv", "r").readline()
             try:
-                if(self.score > int(old_highscore_value)):
-                    highscore_value = open("data/serialisation/highscore.csv", "w")
-                    highscore_value.write(str(self.score))
-                    highscore_value.close()
+                if (self.score > int(old_highscore_value)):
+                    with open("data/serialisation/highscore.csv", "w") as highscore_value:
+                        highscore_value.write(str(self.score))
             except:
                 pass
             is_menu = True
@@ -308,7 +301,7 @@ class LevelBuilder:
         sound = mixer.Sound("data/audio/Reload.wav")
         sound.set_volume(0.02)
         sound.play()
-        for i in range(2):
+        for _ in range(2):
             pos = Vector2()
             pos.x = random.randint(100, 700)
             pos.y = random.randint(100, 500)
@@ -320,7 +313,7 @@ class LevelBuilder:
         sound = mixer.Sound("data/audio/Spawn.wav")
         sound.set_volume(0.05)
         sound.play()
-        for i in range(rand):
+        for _ in range(rand):
             random_pos = random.randint(0, 760)
             position = Vector2()
             position.x = random_pos
@@ -462,9 +455,6 @@ mixer.music.load("data/audio/music.mp3")
 mixer.music.set_volume(0.01)
 mixer.music.play(-1)
 
-while(True):
-    if(is_menu):
-        instance = Menu(screen)
-    else:
-        instance = Game(screen)
+while True:
+    instance = Menu(screen) if (is_menu) else Game(screen)
     print(is_menu)
